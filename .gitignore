@@ -33,5 +33,5 @@ Thumbs.db
 .coverage
 htmlcov/
 
-# Streamlit
-.streamlit/
+# Streamlit — commit config.toml but never secrets
+.streamlit/secrets.toml
