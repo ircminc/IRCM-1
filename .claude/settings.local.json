@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:pfs.data.cms.gov)",
+      "WebSearch",
+      "WebFetch(domain:developer.cms.gov)",
+      "WebFetch(domain:data.cms.gov)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:nirmitee.io)",
+      "WebFetch(domain:snyk.io)",
+      "WebFetch(domain:pypi.org)",
+      "WebFetch(domain:www.cms.gov)",
+      "Bash(pip install:*)",
+      "Bash(py --version)",
+      "Bash(python3 -m pip --version)",
+      "Bash(python -m pip --version)",
+      "Bash(cmd /c \"python --version && python -m pip --version\")",
+      "Bash(cmd /c \"where python\")",
+      "Bash(cmd /c \"where pip\")",
+      "Bash(cmd /c \"where streamlit\")",
+      "Bash(cmd /c \"py -3 --version && py -3 -m pip --version && py -3 -m streamlit --version\")",
+      "Bash(cmd /c \"py -3 --version\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(powershell -Command \"python --version; pip --version; streamlit --version\")",
+      "Bash(powershell -Command \"Get-Command python,python3,py,streamlit -ErrorAction SilentlyContinue | Select-Object Name,Source\")",
+      "Bash(powershell -Command ':*)",
+      "Bash(powershell -Command \"Get-ChildItem 'C:\\\\Users\\\\s.patrick\\\\AppData\\\\Local\\\\Python' -Recurse -Filter 'python.exe' -ErrorAction SilentlyContinue | Select-Object FullName\")",
+      "Bash(powershell -Command \"& 'C:\\\\Users\\\\s.patrick\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' -m pip install -r 'H:\\\\Working\\\\eProjects\\\\ANSI X12 Tool\\\\requirements.txt' --no-warn-script-location 2>&1\")",
+      "Bash(powershell -Command \"& 'C:\\\\Users\\\\s.patrick\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' -m pip index versions pandas 2>&1 | Select-String '3\\\\.' | head -3\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(powershell -Command \"& 'C:\\\\Users\\\\s.patrick\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' -m streamlit run app.py --server.port 8501 --server.headless true 2>&1\")",
+      "Bash(powershell -Command \"& 'C:\\\\Users\\\\s.patrick\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' -c 'import app' 2>&1\")",
+      "Bash(powershell -Command \"& 'C:\\\\Users\\\\s.patrick\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' -m streamlit run app.py --server.port 8501 --server.headless true 2>&1 | Select-Object -First 60\")",
+      "Bash(powershell -Command \"Get-Process -Name python* -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,CommandLine; netstat -ano | findstr ':8501'\")",
+      "Bash(powershell -Command \"Invoke-WebRequest -Uri 'http://localhost:8501' -UseBasicParsing -TimeoutSec 5 | Select-Object StatusCode, StatusDescription\")"
+    ]
+  }
+}

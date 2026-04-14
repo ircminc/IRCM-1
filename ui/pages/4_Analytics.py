@@ -3,7 +3,6 @@ import streamlit as st
 import pandas as pd
 from storage.file_store import list_files, ensure_db
 
-st.set_page_config(page_title="Analytics", layout="wide")
 st.title("📈 Analytics Dashboard")
 
 ensure_db()

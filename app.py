@@ -1,6 +1,6 @@
 """
-ANSI X12 Medical Billing Converter
-Main Streamlit entry point.
+ANSI X12 Medical Billing Converter — entry point.
+Uses st.navigation() so pages can live anywhere (not just pages/).
 """
 import streamlit as st
 
@@ -11,34 +11,32 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Start CMS rate refresh scheduler in background
+# ── One-time startup tasks ────────────────────────────────────────────────────
 try:
     from cms_rates.scheduler import start_scheduler
     start_scheduler()
 except Exception:
     pass
 
-# Initialize DB
 try:
     from storage.file_store import ensure_db
     ensure_db()
 except Exception as e:
     st.error(f"Database init failed: {e}")
 
-st.title("🏥 ANSI X12 Medical Billing Converter")
-st.markdown("""
-**Supported transaction sets:** 837P · 835 · 270 · 271 · 276 · 277 · 834 · 820
+# ── Page registry ─────────────────────────────────────────────────────────────
+home_page = st.Page("ui/pages/0_Home.py",         title="Home",          icon="🏥", default=True)
+upload    = st.Page("ui/pages/1_Upload_Parse.py", title="Upload & Parse", icon="📂")
+explorer  = st.Page("ui/pages/2_Explorer.py",     title="Data Explorer",  icon="🔍")
+export    = st.Page("ui/pages/3_Export.py",        title="Export",         icon="📊")
+analytics = st.Page("ui/pages/4_Analytics.py",    title="Analytics",      icon="📈")
+cms       = st.Page("ui/pages/5_CMS_Rates.py",    title="CMS Rates",      icon="💊")
+settings  = st.Page("ui/pages/6_Settings.py",     title="Settings",       icon="⚙️")
 
-Use the sidebar to navigate between tools. Upload EDI files to parse, export to Excel/PDF,
-run denial trend analysis, and compare charges against CMS Medicare rates.
-""")
-
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    st.info("📂 **Upload & Parse**\nDrag-drop EDI files for instant parsing")
-with col2:
-    st.info("📊 **Export**\nDownload formatted Excel and PDF reports")
-with col3:
-    st.info("📈 **Analytics**\nDenial trends, volume, payer analysis")
-with col4:
-    st.info("💊 **CMS Rates**\nCompare charges vs Medicare PFS & ASP")
+pg = st.navigation({
+    " ":        [home_page],
+    "Tools":    [upload, explorer, export],
+    "Analysis": [analytics, cms],
+    "Config":   [settings],
+})
+pg.run()

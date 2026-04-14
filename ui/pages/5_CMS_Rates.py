@@ -3,7 +3,6 @@ import streamlit as st
 import pandas as pd
 from storage.file_store import list_files, ensure_db
 
-st.set_page_config(page_title="CMS Rates", layout="wide")
 st.title("💊 CMS Medicare Rate Comparison")
 
 ensure_db()

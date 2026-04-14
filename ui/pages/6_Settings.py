@@ -3,7 +3,6 @@ import streamlit as st
 from config import settings
 import datetime
 
-st.set_page_config(page_title="Settings", layout="wide")
 st.title("⚙️ Settings")
 
 st.subheader("CMS Rate Thresholds")

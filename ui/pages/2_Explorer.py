@@ -5,7 +5,6 @@ from storage.file_store import list_files, ensure_db
 from core.parser import parse_edi_file
 import io
 
-st.set_page_config(page_title="Data Explorer", layout="wide")
 st.title("🔍 Data Explorer")
 
 ensure_db()

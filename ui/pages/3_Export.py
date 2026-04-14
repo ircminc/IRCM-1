@@ -3,7 +3,6 @@ import streamlit as st
 from storage.file_store import list_files, ensure_db
 import io
 
-st.set_page_config(page_title="Export", layout="wide")
 st.title("📊 Export to Excel / PDF")
 
 ensure_db()

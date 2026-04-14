@@ -6,7 +6,6 @@ from core.parser import parse_edi_file
 from core.parser.base_parser import detect_tx_type, _get_delimiters
 from storage.file_store import save_parsed_file, list_files, delete_file
 
-st.set_page_config(page_title="Upload & Parse", layout="wide")
 st.title("📂 Upload & Parse EDI Files")
 
 TX_LABELS = {
