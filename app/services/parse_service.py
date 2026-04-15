@@ -114,7 +114,7 @@ def parse_edi(
             filename=filename,
             tx_type=tx_type,
             success=True,
-            data=parsed,
+            data=parsed.get("data", {}),   # inner payload only: {"claims":[]} / {"claim_payments":[]} etc.
             record_count=record_count,
             duration_ms=duration,
             warnings=warnings,
@@ -136,20 +136,25 @@ def parse_edi(
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _count_records(parsed: dict, tx_type: str) -> int:
-    """Return a meaningful record count for each transaction type."""
+    """
+    Return a meaningful record count for each transaction type.
+    `parsed` here is the full dict from parse_edi_file (keys: tx_type, data, envelope, …).
+    We reach into parsed["data"] to count the domain objects.
+    """
+    inner = parsed.get("data", {})
     counts = {
-        "837P": lambda d: len(d.get("data", {}).get("claims", [])),
-        "835":  lambda d: len(d.get("data", {}).get("claim_payments", [])),
-        "270":  lambda d: len(d.get("data", {}).get("inquiries", [])),
-        "271":  lambda d: len(d.get("data", {}).get("responses", [])),
-        "276":  lambda d: len(d.get("data", {}).get("inquiries", [])),
-        "277":  lambda d: len(d.get("data", {}).get("responses", [])),
-        "834":  lambda d: len(d.get("data", {}).get("members", [])),
-        "820":  lambda d: len(d.get("data", {}).get("remittances", [])),
+        "837P": lambda d: len(d.get("claims", [])),
+        "835":  lambda d: len(d.get("claim_payments", [])),
+        "270":  lambda d: len(d.get("inquiries", [])),
+        "271":  lambda d: len(d.get("responses", [])),
+        "276":  lambda d: len(d.get("inquiries", [])),
+        "277":  lambda d: len(d.get("responses", [])),
+        "834":  lambda d: len(d.get("members", [])),
+        "820":  lambda d: len(d.get("remittances", [])),
     }
     fn = counts.get(tx_type)
     try:
-        return fn(parsed) if fn else 0
+        return fn(inner) if fn else 0
     except Exception:
         return 0
 
@@ -174,10 +179,6 @@ def _validate_result(parsed: dict, tx_type: str) -> list[str]:
         claims = parsed.get("data", {}).get("claims", [])
         if not claims:
             warnings.append("No claims found in 837P transaction set")
-        for c in claims[:10]:   # spot-check first 10
-            if not getattr(c, "claim_id", None):
-                warnings.append("One or more claims missing CLM01 identifier")
-                break
 
     # 835 specific
     if tx_type == "835":

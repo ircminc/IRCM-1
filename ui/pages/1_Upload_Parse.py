@@ -135,6 +135,8 @@ if uploaded_files:
                         st.warning(f"⚠️ {w}")
 
                     # Save to DB (unless HIPAA no-persistence mode)
+                    # result.data = inner payload {"claims":[…]} / {"claim_payments":[…]} etc.
+                    # file_store.save_parsed_file expects {"data": <inner_payload>, …}
                     file_id = None
                     if not (_cfg and _cfg.effective_no_persistence()):
                         try:
@@ -142,8 +144,8 @@ if uploaded_files:
                             file_id = save_parsed_file(
                                 filename=uploaded.name,
                                 tx_type=result.tx_type,
-                                parsed_result={"tx_type": result.tx_type, "data": result.data,
-                                               "envelope": None, "groups": []},
+                                parsed_result={"tx_type": result.tx_type,
+                                               "data": result.data},
                                 file_size=len(raw_bytes),
                             )
                         except Exception as e:
@@ -159,19 +161,22 @@ if uploaded_files:
                     )
 
                     # Preview parsed data
+                    # result.data is the inner payload dict e.g. {"claims": [...]} or {"claim_payments": [...]}
                     with st.expander("Preview parsed data", expanded=False):
-                        data = result.data
+                        data = result.data       # inner payload — keys are "claims", "claim_payments" etc.
                         tx   = result.tx_type
+
                         if tx == "837P" and data.get("claims"):
                             claims = data["claims"]
                             preview_rows = []
                             for c in claims[:20]:
+                                # Parsers return plain dicts — use .get()
                                 preview_rows.append({
-                                    "claim_id":     getattr(c, "claim_id", ""),
-                                    "total_billed": getattr(c, "total_billed", ""),
-                                    "payer":        getattr(c, "payer_id", ""),
-                                    "dos_from":     str(getattr(c, "dos_from", "")),
-                                    "lines":        len(getattr(c, "service_lines", [])),
+                                    "claim_id":     c.get("claim_id", ""),
+                                    "total_billed": c.get("total_billed", ""),
+                                    "payer":        c.get("payer_id", ""),
+                                    "dos_from":     str(c.get("dos_from", "")),
+                                    "lines":        len(c.get("service_lines", [])),
                                 })
                             st.dataframe(pd.DataFrame(preview_rows), use_container_width=True, hide_index=True)
                             if len(claims) > 20:
@@ -182,10 +187,10 @@ if uploaded_files:
                             preview_rows = []
                             for p in pays[:20]:
                                 preview_rows.append({
-                                    "clp_id": getattr(p, "clp_id", ""),
-                                    "status": getattr(p, "status_code", ""),
-                                    "billed": getattr(p, "billed", ""),
-                                    "paid":   getattr(p, "paid", ""),
+                                    "clp_id": p.get("clp_id", ""),
+                                    "status": p.get("status_code", ""),
+                                    "billed": p.get("billed", ""),
+                                    "paid":   p.get("paid", ""),
                                 })
                             st.dataframe(pd.DataFrame(preview_rows), use_container_width=True, hide_index=True)
                 else:

@@ -379,13 +379,15 @@ def predict_from_837p(parsed_data: dict, adjustments_df: Any = None) -> list[Den
 
     Args:
         parsed_data:    The .data dict from a ParseResult (tx_type=837P).
+                        This is the inner payload: {"claims": [...], "providers": [...]}
         adjustments_df: Optional historical 835 adjustments for enrichment.
 
     Returns:
         Flat list of DenialPrediction objects across all service lines.
     """
     predictor = DenialPredictor()
-    claims = parsed_data.get("claims", [])
+    # Support both inner payload {"claims": [...]} and full dict {"data": {"claims": [...]}}
+    claims = parsed_data.get("claims") or parsed_data.get("data", {}).get("claims", [])
     all_predictions: list[DenialPrediction] = []
 
     for claim in claims:

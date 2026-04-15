@@ -124,11 +124,15 @@ def export_pdf(
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _build_cms_comparisons(parsed_data: dict, year: int | None) -> list[dict] | None:
-    """Build CMS rate comparisons for 837P service lines."""
+    """Build CMS rate comparisons for 837P service lines.
+
+    parsed_data is the inner payload {"claims": [...]} — but also handles the
+    legacy full-dict shape {"data": {"claims": [...]}} defensively.
+    """
     try:
         from cms_rates.rate_comparator import compare_claims
 
-        claims = parsed_data.get("claims", [])
+        claims = parsed_data.get("claims") or parsed_data.get("data", {}).get("claims", [])
         if not claims:
             return None
 
