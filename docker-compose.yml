@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  billing-app:
+    build: .
+    image: ansi-x12-billing:latest
+    container_name: billing_app
+    ports:
+      - "8501:8501"
+    volumes:
+      - billing_data:/app/data
+    environment:
+      # CMS rate thresholds
+      - RATE_FLAG_OVER_PCT=300.0
+      - RATE_FLAG_UNDER_PCT=100.0
+      - PFS_CONVERSION_FACTOR=32.35
+      # Storage (mapped to volume)
+      - TEMP_DIR=/app/data/tmp
+      - CACHE_DIR=/app/data/cms_cache
+      - DB_PATH=/app/data/billing.db
+      - AUDIT_LOG_PATH=/app/data/audit.jsonl
+      # HIPAA mode — set to true for production PHI handling
+      - HIPAA_MODE=false
+      - HIPAA_MASK_PHI=false
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import httpx; httpx.get('http://localhost:8501/_stcore/health').raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  billing_data:
+    driver: local

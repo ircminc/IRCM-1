@@ -32,6 +32,13 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+coverage.xml
+
+# Docker
+docker-compose.override.yml
+
+# Audit logs (contain operational data — don't commit)
+*.jsonl
 
 # Streamlit — commit config.toml but never secrets
 .streamlit/secrets.toml

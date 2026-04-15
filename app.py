@@ -1,42 +1,26 @@
 """
-ANSI X12 Medical Billing Converter — entry point.
-Uses st.navigation() so pages can live anywhere (not just pages/).
+ANSI X12 Medical Billing Converter — Legacy Entry Point
+
+This file is kept for backward compatibility.
+The canonical entry point is now app/main.py which includes all v2 features:
+  - New analytics pages (KPI Dashboard, Provider Performance, Denial Intelligence)
+  - HIPAA security layer
+  - Background processing
+  - Centralized logging + audit trail
+
+Run the full application with:
+    streamlit run app/main.py
+
+This file delegates to app/main.py automatically.
 """
-import streamlit as st
+import runpy
+import os
+import sys
 
-st.set_page_config(
-    page_title="ANSI X12 Medical Billing Converter",
-    page_icon="🏥",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+# Ensure project root is on path
+_ROOT = os.path.dirname(os.path.abspath(__file__))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
 
-# ── One-time startup tasks ────────────────────────────────────────────────────
-try:
-    from cms_rates.scheduler import start_scheduler
-    start_scheduler()
-except Exception:
-    pass
-
-try:
-    from storage.file_store import ensure_db
-    ensure_db()
-except Exception as e:
-    st.error(f"Database init failed: {e}")
-
-# ── Page registry ─────────────────────────────────────────────────────────────
-home_page = st.Page("ui/pages/0_Home.py",         title="Home",          icon="🏥", default=True)
-upload    = st.Page("ui/pages/1_Upload_Parse.py", title="Upload & Parse", icon="📂")
-explorer  = st.Page("ui/pages/2_Explorer.py",     title="Data Explorer",  icon="🔍")
-export    = st.Page("ui/pages/3_Export.py",        title="Export",         icon="📊")
-analytics = st.Page("ui/pages/4_Analytics.py",    title="Analytics",      icon="📈")
-cms       = st.Page("ui/pages/5_CMS_Rates.py",    title="CMS Rates",      icon="💊")
-settings  = st.Page("ui/pages/6_Settings.py",     title="Settings",       icon="⚙️")
-
-pg = st.navigation({
-    " ":        [home_page],
-    "Tools":    [upload, explorer, export],
-    "Analysis": [analytics, cms],
-    "Config":   [settings],
-})
-pg.run()
+# Delegate to the v2 entry point
+runpy.run_path(os.path.join(_ROOT, "app", "main.py"), run_name="__main__")
