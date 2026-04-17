@@ -6,6 +6,23 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 
+# HIPAA version classification from the raw ISA12 value.
+# ISA12 uses "00401" for X12 4010 and "00501" for X12 5010; other values are unknown.
+SUPPORTED_HIPAA_VERSIONS = ("4010", "5010")
+
+
+def classify_hipaa_version(raw_version: str) -> str:
+    """Map the raw ISA12 value to '4010' / '5010' / 'unknown'."""
+    if not raw_version:
+        return "unknown"
+    v = raw_version.strip()
+    if v.startswith("004"):
+        return "4010"
+    if v.startswith("005"):
+        return "5010"
+    return "unknown"
+
+
 @dataclass
 class ISAEnvelope:
     isa_id: str = ""
@@ -14,7 +31,8 @@ class ISAEnvelope:
     date: str = ""
     time: str = ""
     control_number: str = ""
-    version: str = ""
+    version: str = ""          # raw ISA12 value, e.g. "00401" / "00501"
+    hipaa_version: str = ""    # classified: "4010" | "5010" | "unknown"
     element_sep: str = "*"
     component_sep: str = ":"
     segment_term: str = "~"
@@ -59,6 +77,7 @@ def parse_isa(segment_elements: list[str]) -> ISAEnvelope:
     env.time = segment_elements[10]
     env.control_number = segment_elements[13]
     env.version = segment_elements[12]
+    env.hipaa_version = classify_hipaa_version(env.version)
     return env
 
 

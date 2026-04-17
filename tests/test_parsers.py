@@ -202,6 +202,20 @@ class TestParseService:
         assert result.success is True
         assert result.tx_type == "835"
         assert result.record_count == 1
+        # Regression: BPR-found file must NOT emit the "BPR segment not found" warning.
+        assert not any("BPR segment" in w for w in result.warnings), result.warnings
+        # Regression: 5010 envelope must NOT emit a version warning.
+        assert not any("ISA version" in w for w in result.warnings), result.warnings
+
+    def test_parse_service_835_4010(self, sample_835_4010_bytes):
+        """HIPAA 4010 835 files must parse without spurious version or BPR warnings."""
+        from app.services.parse_service import parse_edi
+        result = parse_edi(sample_835_4010_bytes, "era_4010.835")
+        assert result.success is True
+        assert result.tx_type == "835"
+        assert result.record_count == 1
+        assert not any("ISA version" in w for w in result.warnings), result.warnings
+        assert not any("BPR segment" in w for w in result.warnings), result.warnings
 
     def test_parse_service_bad_input(self):
         from app.services.parse_service import parse_edi
@@ -220,6 +234,29 @@ class TestParseService:
         summary = result.summary
         assert "837P" in summary
         assert "1" in summary
+
+
+# ── Envelope version classification ──────────────────────────────────────────
+
+class TestHIPAAVersionClassification:
+    def test_classify_4010(self):
+        from core.parser.envelope import classify_hipaa_version
+        assert classify_hipaa_version("00401") == "4010"
+
+    def test_classify_5010(self):
+        from core.parser.envelope import classify_hipaa_version
+        assert classify_hipaa_version("00501") == "5010"
+
+    def test_classify_unknown(self):
+        from core.parser.envelope import classify_hipaa_version
+        assert classify_hipaa_version("00301") == "unknown"
+        assert classify_hipaa_version("") == "unknown"
+
+    def test_envelope_hipaa_version_set_on_parse(self, sample_835_4010_bytes):
+        from core.parser.base_parser import parse_edi_file
+        result = parse_edi_file(io.BytesIO(sample_835_4010_bytes))
+        assert result["envelope"].version == "00401"
+        assert result["envelope"].hipaa_version == "4010"
 
 
 # ── Normalizer ────────────────────────────────────────────────────────────────

@@ -32,6 +32,11 @@ class Settings(BaseSettings):
     # ── Optional CMS API key (developer.cms.gov) ──────────────────────────────
     ppl_api_key: str = ""
 
+    # ── Optional ASP URL override ─────────────────────────────────────────────
+    # If set, skip scraping and download this ZIP directly. Useful when CMS
+    # restructures the ASP landing page and auto-discovery breaks.
+    asp_zip_url: str = ""
+
     # ── HIPAA Mode ────────────────────────────────────────────────────────────
     # When hipaa_mode=True, ALL sub-flags below are automatically activated.
     # Individual flags can also be toggled independently for partial control.

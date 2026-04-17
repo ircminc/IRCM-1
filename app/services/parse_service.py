@@ -166,12 +166,14 @@ def _validate_result(parsed: dict, tx_type: str) -> list[str]:
     """
     warnings: list[str] = []
 
-    # Envelope checks
+    # Envelope checks — accept both HIPAA 4010 and 5010.
     env = parsed.get("envelope")
-    if env and hasattr(env, "version") and env.version:
-        if not env.version.startswith("005"):
+    if env and getattr(env, "version", None):
+        hipaa_version = getattr(env, "hipaa_version", "") or ""
+        if hipaa_version not in ("4010", "5010"):
             warnings.append(
-                f"ISA version {env.version!r} — expected HIPAA 5010 (005xxx)"
+                f"ISA version {env.version!r} — unrecognized "
+                "(expected HIPAA 4010 '004xxx' or 5010 '005xxx'); parsed best-effort"
             )
 
     # 837P specific
@@ -182,8 +184,10 @@ def _validate_result(parsed: dict, tx_type: str) -> list[str]:
 
     # 835 specific
     if tx_type == "835":
-        header = parsed.get("data", {}).get("header")
-        if header and getattr(header, "total_payment", None) is None:
+        header = parsed.get("data", {}).get("header") or {}
+        # header is a plain dict produced by core/parser/tx_835.py — use .get(), not getattr()
+        total_payment = header.get("total_payment") if isinstance(header, dict) else getattr(header, "total_payment", None)
+        if total_payment is None:
             warnings.append("835 BPR segment (payment total) not found")
 
     return warnings

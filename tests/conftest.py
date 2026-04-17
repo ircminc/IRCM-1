@@ -22,12 +22,21 @@ if _ROOT not in sys.path:
 
 # ── EDI Building Blocks ────────────────────────────────────────────────────────
 
-def _wrap_edi(gs_type: str, st_type: str, tx_segments: str) -> str:
-    """Wrap transaction segments in a valid ISA/GS/ST envelope."""
+def _wrap_edi(
+    gs_type: str,
+    st_type: str,
+    tx_segments: str,
+    isa_version: str = "00501",
+    gs_version: str = "005010X222A2",
+) -> str:
+    """Wrap transaction segments in a valid ISA/GS/ST envelope.
+
+    isa_version/gs_version default to 5010; pass 00401/004010X098A1 for 4010.
+    """
     return (
-        "ISA*00*          *00*          *ZZ*SENDER         *ZZ*RECEIVER       "
-        "*260101*1200*^*00501*000000001*0*P*:~"
-        f"GS*{gs_type}*SENDERGS*RECEIVERGS*20260101*1200*1*X*005010X222A2~"
+        f"ISA*00*          *00*          *ZZ*SENDER         *ZZ*RECEIVER       "
+        f"*260101*1200*^*{isa_version}*000000001*0*P*:~"
+        f"GS*{gs_type}*SENDERGS*RECEIVERGS*20260101*1200*1*X*{gs_version}~"
         f"ST*{st_type}*0001~"
         f"{tx_segments}"
         "SE*2*0001~"
@@ -108,6 +117,27 @@ SAMPLE_270_EDI = _wrap_edi(
 )
 
 
+# 4010 variant of the 835 sample — identical segments, older envelope version.
+SAMPLE_835_EDI_4010 = _wrap_edi(
+    "HP", "835",
+    (
+        "BPR*I*250.00*C*ACH*CCP*01*999999999*DA*1234567890*1122334455**01*"
+        "555555555*DA*9876543210*20260115~"
+        "TRN*1*CHECK12345*1122334455~"
+        "DTM*405*20260115~"
+        "N1*PR*MEDICARE*XX*PAYERID~"
+        "N1*PE*TEST BILLING GROUP*XX*1234567890~"
+        "CLP*CLAIM001*1*150.00*120.00*10.00*MB*PAYERCLAIM001~"
+        "NM1*QC*1*DOE*JANE~"
+        "SVC*HC:99213*75.00*60.00~"
+        "DTM*472*20260101~"
+        "CAS*CO*45*15.00~"
+    ),
+    isa_version="00401",
+    gs_version="004010X091A1",
+)
+
+
 @pytest.fixture
 def sample_837p_bytes() -> bytes:
     return SAMPLE_837P_EDI.encode("utf-8")
@@ -116,6 +146,11 @@ def sample_837p_bytes() -> bytes:
 @pytest.fixture
 def sample_835_bytes() -> bytes:
     return SAMPLE_835_EDI.encode("utf-8")
+
+
+@pytest.fixture
+def sample_835_4010_bytes() -> bytes:
+    return SAMPLE_835_EDI_4010.encode("utf-8")
 
 
 @pytest.fixture

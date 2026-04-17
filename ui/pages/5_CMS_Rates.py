@@ -49,12 +49,19 @@ with col2:
     if st.button("Refresh ASP Now"):
         with st.spinner("Downloading ASP pricing file..."):
             try:
-                from cms_rates.asp_client import get_asp_dataframe
+                from cms_rates.asp_client import get_asp_dataframe, ASPDownloadError
                 df, label = get_asp_dataframe()
                 if df is not None:
                     st.success(f"ASP loaded: {len(df):,} codes ({label})")
                 else:
                     st.error("Could not download ASP data.")
+            except ASPDownloadError as e:
+                st.error(f"ASP download failed: {e}")
+                st.caption(
+                    "If CMS moved or renamed the ZIP, set `ASP_ZIP_URL` in your "
+                    "`.env` (or Streamlit Cloud secrets) to the direct download "
+                    "URL and click Refresh again."
+                )
             except Exception as e:
                 st.error(str(e))
 
